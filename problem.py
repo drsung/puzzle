@@ -147,6 +147,13 @@ class Solve_Problem:
 		"""
 		A heuristic function estimates the cost from the current state to 
 		the nearest goal in the provided. 
+		
+		return: (nextState, direction, cost)
+		With nextState = (matrix, nonPosition)
+			matrix - [[1,2,3], [8,0,4], [7,6,5] -> goalState
+			nonPosition - (1, 1) -> position of "0"
+		Example aStartSearch return:
+			(([[1, 2, 3], [8, 0, 4], [7, 6, 5]], (1, 1)), ['West', 'East', 'North', 'West'], 20.0)
 		"""
 
 		frontier = PriorityQueue()
@@ -164,7 +171,9 @@ class Solve_Problem:
 		return curState
 
 	def printState(self, state):
-		
+		"""
+		print matrix 
+		"""
 		 matrix = state
 		 for x in matrix:
 		 	for y in x:
@@ -211,6 +220,9 @@ class Solve_Problem:
 
 
 	def doAction(self, problem):
+		"""
+		solve the 8 puzzle problem step by step on console
+		"""
 		direction = Direction()
 		startSate = problem.getStartState()
 		answer = self.aStarSearch(problem)
