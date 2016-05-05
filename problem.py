@@ -2,14 +2,45 @@ import heapq
 import copy
 
 class Problem:
-	"""
 
-	"""
 	def __init__(self):
 		"""
 		"""
 		self.nodeExpanded = 0
+		self.startState = []
+		self.nonePosition = None
+		self.dicGoal = dict()
 
+	def findNonePosition(self, matrix):
+		""" find position of "0" in matrix """
+
+		for i in range(len(matrix)):
+			for j in range(len(matrix[0])):
+				if matrix[i][j] == 0:
+					return (i, j)
+
+	"""
+	def setStartState(self):
+		startState = []
+		for i in range(3):
+			temp = []
+			for j in range(3):
+				num = int(input())
+				if num == 0:
+					self.nonePosition = (i, j)
+				temp.append(num)
+			startState.append(temp)
+
+
+		self.startState = startState
+	"""
+
+	def setStartState(self, matrix):
+
+		self.startState = matrix[:]
+
+		# find position of "0"
+		self.nonePosition = self.findNonePosition(self.startState)
 
 	def getStartState(self):
 		""" 
@@ -17,20 +48,36 @@ class Problem:
 		state stored in array
 		-> ([], localNone)
 		"""
-		startSate =[[5,4,2],[7,8,3],[1,6,0]]
+		"""
+		self.startSate =[[5,4,2],[7,8,3],[1,6,0]]
 		nonePosition = (2,2)
+		"""
 
-		return (startSate, nonePosition)
+		return (self.startState, self.nonePosition)
+
+	def setGoalState(self, matrix):
+		""" Set goal state equal to matrix """
+		self.goalState = matrix[:]
+
+		# create dicGoal to calculate heuristic value
+		for i in range(len(matrix)):
+			for j in range(len(matrix[0])):
+				self.dicGoal[matrix[i][j]] = (i, j)
+
+		
+
 	def getGoalState(self):
 		"""
 		return Goal State 
 		state stored in array with '0' is None-node
 		"""
-
+		"""
 		goalState = [[1,2,3],[8,0,4],[7,6,5]]
 		nonePosition = (1,1)
 		dicGoal = {1: (0,0), 2 : (0,1), 3 : (0, 2), 8 : (1, 0), 0 : (1, 1), 4 : (1, 2), 7 : (2, 0), 6 : (2, 1), 5 : (2, 2)}
-		return (goalState, nonePosition, dicGoal)
+		"""
+
+		return (self.goalState, self.dicGoal)
 
 	def isGoadState(self, state):
 		"""
@@ -75,26 +122,13 @@ class Problem:
 				matrix[x][y] = matrix[nextx][nexty]
 				matrix[nextx][nexty] = temp
 				nextState = (matrix, (nextx, nexty))
-				successors.append((nextState, direction.toString(action), cost))
+				successors.append((nextState, direction.toString(action), cost, nextState[1]))
 		
 		#print("successors: ", successors)
 
 		self.nodeExpanded += 1
 		return successors
 
-class Stack:
-	"A container with a last-in-first-out (LIFO) queuing policy."
-	def __init__(seft):
-		seft.list = []
-	def push(self, item):
-		"Push 'item' onto the stack"
-		self.list.append(item)
-	def pop(self):
-		"Pop the most recently pushed item from the stack"
-		return self.list.pop()
-	def isEmpty(self):
-		"Returns true if the stack is empty"
-		return len(self.list) == 0
 
 class PriorityQueue:
 	"""
@@ -147,33 +181,35 @@ class Solve_Problem:
 		"""
 		A heuristic function estimates the cost from the current state to 
 		the nearest goal in the provided. 
-		
-		return: (nextState, direction, cost)
-		With nextState = (matrix, nonPosition)
-			matrix - [[1,2,3], [8,0,4], [7,6,5] -> goalState
-			nonPosition - (1, 1) -> position of "0"
-		Example aStartSearch return:
-			(([[1, 2, 3], [8, 0, 4], [7, 6, 5]], (1, 1)), ['West', 'East', 'North', 'West'], 20.0)
 		"""
 
 		frontier = PriorityQueue()
-		curState = [problem.getStartState(), [], 0.0]
+		startState = problem.getStartState()
+		curState = [startState, [], 0.0, [startState[1]]]
 		visited_state = []
 
 		while not problem.isGoadState(curState[0]):
-			curNode, cur_dir, cur_cost = curState
+			curNode, cur_dir, cur_cost, nonePositionMove = curState
 			if curNode not in visited_state:
 				visited_state.append(curNode)
-				for nextState, direction, cost in problem.getSuccessors(curNode):
-					frontier.push((nextState, cur_dir + [direction], cur_cost + cost), cur_cost + cost + self.heuristicFunction(nextState, problem))
+				for nextState, direction, cost, nonePosition in problem.getSuccessors(curNode):
+					frontier.push((nextState, cur_dir + [direction], cur_cost + cost, nonePositionMove + [nonePosition]), cur_cost + cost + self.heuristicFunction(nextState, problem))
 				
 			curState = frontier.pop()
 		return curState
 
+	def getAnswer(self, problem):
+		""" Get answer for problem
+		return: a tupe contain (nonePositionMove, cost, nodeExpanded)
+				nonePositionMove: list changing of "0" position
+				nodeExpanded: total node expanded 
+		"""
+		goalState, moveDirection, cost, nonePositionMove = self.aStarSearch(problem)
+
+		return (nonePositionMove, problem.nodeExpanded)
+
 	def printState(self, state):
-		"""
-		print matrix 
-		"""
+		
 		 matrix = state
 		 for x in matrix:
 		 	for y in x:
@@ -189,7 +225,7 @@ class Solve_Problem:
 
 	def printAnswer(self, problem):
 		answer = self.aStarSearch(problem)
-		state, direction, cost = answer
+		state, direction, cost, nonePositionMove = answer
 		
 		self.printState(state[0])
 		print(direction)
@@ -206,7 +242,7 @@ class Solve_Problem:
 		matrix, nonePosition = state
 
 		goalState = problem.getGoalState()
-		goalMatrix, goalPosition, dicGoal = goalState
+		goalMatrix, dicGoal = goalState
 		length = len(matrix[0])
 		for x in range(0, length):
 			for y in range(0, length):
@@ -220,9 +256,6 @@ class Solve_Problem:
 
 
 	def doAction(self, problem):
-		"""
-		solve the 8 puzzle problem step by step on console
-		"""
 		direction = Direction()
 		startSate = problem.getStartState()
 		answer = self.aStarSearch(problem)
