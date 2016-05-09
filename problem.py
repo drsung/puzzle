@@ -252,8 +252,9 @@ class Solve_Problem:
 				if matrix[x][y] != goalMatrix[x][y]:
 					wrongPosition += 1
 				dx, dy = dicGoal[matrix[x][y]]
-				distance += (abs(x - dx) + abs(y - dy))
-		heuristicValue = distance + wrongPosition
+				temp = (abs(x - dx)**2 + abs(y - dy)**2)
+				distance += temp + 0.1*temp
+		heuristicValue = distance #+ wrongPosition
 		
 		return heuristicValue
 
