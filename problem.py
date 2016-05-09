@@ -122,7 +122,7 @@ class Problem:
 				matrix[x][y] = matrix[nextx][nexty]
 				matrix[nextx][nexty] = temp
 				nextState = (matrix, (nextx, nexty))
-				successors.append((nextState, direction.toString(action), cost, nextState[1]))
+				successors.append((nextState, cost, nextState[1]))
 		
 		#print("successors: ", successors)
 
@@ -185,16 +185,19 @@ class Solve_Problem:
 
 		frontier = PriorityQueue()
 		startState = problem.getStartState()
-		curState = [startState, [], 0.0, [startState[1]]]
+		curState = [startState, 0.0, [startState[1]]]
 		visited_state = []
 
 		while not problem.isGoadState(curState[0]):
-			curNode, cur_dir, cur_cost, nonePositionMove = curState
+			curNode, cur_cost, nonePositionMove = curState
+
 			if curNode not in visited_state:
 				visited_state.append(curNode)
-				for nextState, direction, cost, nonePosition in problem.getSuccessors(curNode):
-					frontier.push((nextState, cur_dir + [direction], cur_cost + cost, nonePositionMove + [nonePosition]), cur_cost + cost + self.heuristicFunction(nextState, problem))
-				
+				for nextState, cost, nonePosition in problem.getSuccessors(curNode):
+					heuvalue = cur_cost + cost + self.heuristicFunction(nextState, problem)
+					frontier.push((nextState, cur_cost + cost, nonePositionMove + [nonePosition]), heuvalue)
+				#print("State: ")
+			#print(frontier)
 			curState = frontier.pop()
 		return curState
 
@@ -204,7 +207,7 @@ class Solve_Problem:
 				nonePositionMove: list changing of "0" position
 				nodeExpanded: total node expanded 
 		"""
-		goalState, moveDirection, cost, nonePositionMove = self.aStarSearch(problem)
+		goalState, cost, nonePositionMove = self.aStarSearch(problem)
 
 		return (nonePositionMove, problem.nodeExpanded)
 
@@ -225,10 +228,10 @@ class Solve_Problem:
 
 	def printAnswer(self, problem):
 		answer = self.aStarSearch(problem)
-		state, direction, cost, nonePositionMove = answer
+		state, cost, nonePositionMove = answer
 		
 		self.printState(state[0])
-		print(direction)
+		print(nonePositionMove)
 		print("Node Expanded: ", problem.nodeExpanded)
 		print("Cost: ", cost)
 		
@@ -248,8 +251,8 @@ class Solve_Problem:
 			for y in range(0, length):
 				if matrix[x][y] != goalMatrix[x][y]:
 					wrongPosition += 1
-					dx, dy = dicGoal[matrix[x][y]]
-					distance += (abs(x - dx) + abs(y - dy))
+				dx, dy = dicGoal[matrix[x][y]]
+				distance += (abs(x - dx) + abs(y - dy))
 		heuristicValue = distance + wrongPosition
 		
 		return heuristicValue
@@ -262,8 +265,8 @@ class Solve_Problem:
 		matrix, nonePosition = startSate
 		x, y = nonePosition
 		print("Answer: ", answer)
-		for item in answer[1]:
-			dx, dy = direction.tempDictionary[item]
+		for item in answer[2]:
+			dx, dy = item
 			nextx, nexty = int(x+dx), int(y+dy)
 			temp = matrix[x][y]
 			matrix[x][y] = matrix[nextx][nexty]
