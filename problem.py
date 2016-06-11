@@ -209,7 +209,7 @@ class Solve_Problem:
 		"""
 		goalState, cost, nonePositionMove = self.aStarSearch(problem)
 
-		return (nonePositionMove, problem.nodeExpanded)
+		return (nonePositionMove, cost, problem.nodeExpanded)
 
 	def printState(self, state):
 		
@@ -218,6 +218,7 @@ class Solve_Problem:
 		 	for y in x:
 		 		print(y, end=" ")
 		 	print('\n')
+
 	def printGoalState(self, problem):
 		goalState = problem.getGoalState()
 		self.printState(goalState[0])
@@ -260,26 +261,19 @@ class Solve_Problem:
 
 
 	def doAction(self, problem):
-		direction = Direction()
-		startSate = problem.getStartState()
-		answer = self.aStarSearch(problem)
-		matrix, nonePosition = startSate
+		nonePositionMove, cost, nodeExpanded = self.getAnswer(problem)
+		state, nonePosition = problem.getStartState()
 		x, y = nonePosition
-		print("Answer: ", answer)
-		for item in answer[2]:
-			dx, dy = item
-			nextx, nexty = int(x+dx), int(y+dy)
-			temp = matrix[x][y]
-			matrix[x][y] = matrix[nextx][nexty]
-			matrix[nextx][nexty] = temp
+		step = 0
+		
+		for move in nonePositionMove:
+			print("Step: ", step)
+			nextx, nexty = move
+			temp = state[x][y]
+			state[x][y] = state[nextx][nexty]
+			state[nextx][nexty] = temp
 			x, y = nextx, nexty
-			print(x,y, item,'\n')
-			self.printState(matrix)
-			#print(problem.isGoadState((matrix, (x,y))))
-			print('\n')
-
-
-
-
+			self.printState(state)
+			step += 1
 
 
