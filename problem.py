@@ -191,6 +191,9 @@ class Solve_Problem:
 		while not problem.isGoadState(curState[0]):
 			curNode, cur_cost, nonePositionMove = curState
 
+			if(problem.nodeExpanded > 2000):
+				return (startState, -1, [startState[1]])
+
 			if curNode not in visited_state:
 				visited_state.append(curNode)
 				for nextState, cost, nonePosition in problem.getSuccessors(curNode):
@@ -208,6 +211,8 @@ class Solve_Problem:
 				nodeExpanded: total node expanded 
 		"""
 		goalState, cost, nonePositionMove = self.aStarSearch(problem)
+		if(cost == -1):
+			print("not found solution")
 
 		return (nonePositionMove, cost, problem.nodeExpanded)
 
